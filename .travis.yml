@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t suttep/react-test -f ./client/Dockerfile.dev .
+
+script:
+  - docker run suttep/react-test npm test -- --coverage
+
+after_surcces:
+  - docker build -t suttep/multi-client ./client
+  - docker build -t suttep/multi-nginx ./nginx
+  - docker build -t suttep/multi-server ./server
+  - docker build -t suttep/multi-worker ./worker
+  
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push suttep/multi-client
+  - docker push suttep/multi-nginx
+  - docker push suttep/multi-server
+  - docker push suttep/multi-worker
